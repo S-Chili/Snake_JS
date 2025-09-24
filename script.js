@@ -12,6 +12,9 @@ const gridSize = 20;
 
 let isPaused = false;
 
+let startX = 0;
+let startY = 0;
+
 document.addEventListener("keydown", (event) => {
   if (
     event.key === "p" ||
@@ -22,6 +25,59 @@ document.addEventListener("keydown", (event) => {
     isPaused = !isPaused; // Змінюємо стан на протилежний
   }
 });
+
+// Додаємо слухачів подій для свайпів на Canvas
+canvas.addEventListener("touchstart", handleTouchStart, false);
+canvas.addEventListener("touchmove", handleTouchMove, false);
+canvas.addEventListener("touchend", handleTouchEnd, false);
+
+function handleTouchStart(event) {
+  const firstTouch = event.touches[0];
+  startX = firstTouch.clientX;
+  startY = firstTouch.clientY;
+}
+
+function handleTouchMove(event) {
+  if (!startX || !startY) {
+    return;
+  }
+
+  let endX = event.touches[0].clientX;
+  let endY = event.touches[0].clientY;
+
+  let diffX = startX - endX;
+  let diffY = startY - endY;
+
+  // Якщо рух по горизонталі більший, ніж по вертикалі, це свайп вліво/вправо
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    if (diffX > 0) {
+      // Свайп вліво
+      if (direction.x === 0) direction = { x: -1, y: 0 };
+    } else {
+      // Свайп вправо
+      if (direction.x === 0) direction = { x: 1, y: 0 };
+    }
+  } else {
+    // Інакше, це свайп вгору/вниз
+    if (diffY > 0) {
+      // Свайп вгору
+      if (direction.y === 0) direction = { x: 0, y: -1 };
+    } else {
+      // Свайп вниз
+      if (direction.y === 0) direction = { x: 0, y: 1 };
+    }
+  }
+
+  // Скидаємо початкові координати, щоб не спрацювало знову
+  startX = 0;
+  startY = 0;
+}
+
+function handleTouchEnd(event) {
+  // Просто скидаємо координати після завершення свайпу
+  startX = 0;
+  startY = 0;
+}
 
 // Створюємо початкову змійку. Вона складається з одного сегмента.
 let snake = [{ x: 10, y: 10 }];
