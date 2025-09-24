@@ -1,3 +1,5 @@
+let backgroundColor = "beige";
+
 // Знаходимо наш <canvas> елемент за id
 const canvas = document.getElementById("gameCanvas");
 
@@ -7,6 +9,19 @@ const ctx = canvas.getContext("2d");
 // Розміри нашого полотна
 const canvasSize = 600;
 const gridSize = 20;
+
+let isPaused = false;
+
+document.addEventListener("keydown", (event) => {
+  if (
+    event.key === "p" ||
+    event.key === "P" ||
+    event.key === "з" ||
+    event.key === "З"
+  ) {
+    isPaused = !isPaused; // Змінюємо стан на протилежний
+  }
+});
 
 // Створюємо початкову змійку. Вона складається з одного сегмента.
 let snake = [{ x: 10, y: 10 }];
@@ -32,21 +47,51 @@ function checkCollision() {
 
 // Функція для генерації випадкових координат їжі
 function createFood() {
-  food = {
-    // Генеруємо випадкове число від 0 до (кількість_клітинок - 1)
-    x: Math.floor(Math.random() * (canvasSize / gridSize)),
-    y: Math.floor(Math.random() * (canvasSize / gridSize)),
-  };
+  let newFood;
+  // Цикл do-while буде виконуватись доти, доки ми не знайдемо вільне місце
+  do {
+    newFood = {
+      x: Math.floor(Math.random() * (canvasSize / gridSize)),
+      y: Math.floor(Math.random() * (canvasSize / gridSize)),
+    };
+  } while (isSnake(newFood));
+
+  food = newFood;
+}
+
+// Нова функція для перевірки, чи є клітинка частиною змійки
+function isSnake(point) {
+  // some() перевіряє, чи хоча б один елемент масиву відповідає умові
+  return snake.some(
+    (segment) => segment.x === point.x && segment.y === point.y
+  );
 }
 
 // Це наш ігровий цикл
 function gameLoop() {
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Додаємо зображення сонця та місяця на сторінку (не на canvas)
+  // Додай в index.html, наприклад, після canvas
+  // <img id="sun" src="sun.png" style="width: 50px; cursor: pointer;">
+  // <img id="moon" src="moon.png" style="width: 50px; cursor: pointer;">
+
   if (checkCollision()) {
     alert("Гра закінчена! Ваш рахунок: " + score);
     return; // Зупиняємо виконання функції gameLoop()
   }
-  // 1. Очищаємо екран
-  ctx.clearRect(0, 0, canvasSize, canvasSize);
+  if (isPaused) {
+    // Малюємо напис "ПАУЗА"
+    ctx.fillStyle = "red";
+    ctx.font = "40px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("PAUSE", canvas.width / 2, canvas.height / 2);
+
+    // Якщо на паузі, просто зупиняємо цикл і чекаємо
+    setTimeout(gameLoop, 150);
+    return;
+  }
 
   // 2. Створюємо нову голову змійки на основі поточного напрямку
   const head = {
@@ -97,9 +142,9 @@ function gameLoop() {
   });
 
   // Малюємо їжу
-  ctx.fillStyle = "red";
-  ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-
+  ctx.fillStyle = "red"; // Колір іконки
+  ctx.font = `900 ${gridSize}px 'Font Awesome 6 Free'`; // Розмір і шрифт
+  ctx.fillText("\uf5d2", food.x * gridSize, food.y * gridSize + gridSize - 2);
   // Малюємо рахунок
   ctx.fillStyle = "black";
   ctx.font = "20px Arial";
@@ -112,6 +157,17 @@ function gameLoop() {
 // Запускаємо гру
 createFood();
 gameLoop();
+
+// Додаємо JavaScript для обробки кліків
+document.getElementById("sun").addEventListener("click", () => {
+  backgroundColor = "beige";
+  updateBackground();
+});
+
+document.getElementById("moon").addEventListener("click", () => {
+  backgroundColor = "gray"; // Змінюємо на сірий
+  updateBackground();
+});
 
 // Додаємо слухача подій для клавіатури
 document.addEventListener("keydown", changeDirection);
@@ -142,4 +198,32 @@ function changeDirection(event) {
   if (keyPressed === DOWN_KEY && !goingUp) {
     direction = { x: 0, y: 1 };
   }
+}
+
+// A function to reset the game state
+function restartGame() {
+  // Reset all game variables to their initial state
+  snake = [{ x: 10, y: 10 }];
+  direction = { x: 1, y: 0 };
+  score = 0;
+  isPaused = false;
+  // Create new food
+  createFood();
+  // Restart the game loop
+  gameLoop();
+}
+
+// ... existing code
+
+// Find the restart button and add a click event listener
+document.getElementById("restartButton").addEventListener("click", () => {
+  restartGame();
+});
+
+// We also need to change the game-over condition to call restartGame()
+if (checkCollision()) {
+  alert("Гра закінчена! Ваш рахунок: " + score);
+  // Don't just return, show a restart button or call the restart function
+  // For now, let's keep it simple and just have the alert.
+  // The player can click the button we just added.
 }
