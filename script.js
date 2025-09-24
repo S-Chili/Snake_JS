@@ -162,9 +162,9 @@ function gameLoop() {
   ctx.font = `900 ${gridSize}px 'Font Awesome 6 Free'`; // Розмір і шрифт
   ctx.fillText("\uf5d2", food.x * gridSize, food.y * gridSize + gridSize - 2);
   // Малюємо рахунок
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "green"; // Змінюємо на білий або світлий колір
   ctx.font = "20px Arial";
-  ctx.fillText("Рахунок: " + score, 10, 20); // Координати тексту
+  ctx.fillText("Рахунок: " + score, 10, 20);
 
   // Викликаємо наступний кадр з затримкою 150 мілісекунд (0.15 секунди)
   setTimeout(gameLoop, 150);
@@ -177,12 +177,10 @@ gameLoop();
 // Додаємо JavaScript для обробки кліків
 document.getElementById("sun").addEventListener("click", () => {
   backgroundColor = "beige";
-  updateBackground();
 });
 
 document.getElementById("moon").addEventListener("click", () => {
   backgroundColor = "gray"; // Змінюємо на сірий
-  updateBackground();
 });
 
 // Додаємо слухачів подій для кнопок-стрілок

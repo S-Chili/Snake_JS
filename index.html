@@ -11,48 +11,26 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+    <div class="top-controls">
+      <i id="sun" class="fas fa-sun"></i>
+      <i id="moon" class="fas fa-moon"></i>
+    </div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
-    <div class="helping">
-      <i
-        id="restartButton"
-        class="fas fa-redo"
-        style="font-size: 50px; cursor: pointer; color: black"
-      ></i>
-      <i
-        id="sun"
-        class="fas fa-sun"
-        style="font-size: 50px; cursor: pointer"
-      ></i>
-      <i
-        id="moon"
-        class="fas fa-moon"
-        style="font-size: 50px; cursor: pointer"
-      ></i>
-    </div>
-    <div class="controls">
-      <i
-        id="arrowUp"
-        class="fas fa-arrow-up"
-        style="font-size: 200px; cursor: pointer; color: black"
-      ></i>
-      <div class="horizontal-arrows">
-        <i
-          id="arrowLeft"
-          class="fas fa-arrow-left"
-          style="font-size: 200px; cursor: pointer; color: black"
-        ></i>
-        <i
-          id="arrowRight"
-          class="fas fa-arrow-right"
-          style="font-size: 200px; cursor: pointer; color: black"
-        ></i>
+
+    <div class="bottom-controls">
+      <div class="controls-wrapper">
+        <i id="restartButton" class="fas fa-redo-alt"></i>
       </div>
-      <i
-        id="arrowDown"
-        class="fas fa-arrow-down"
-        style="font-size: 200px; cursor: pointer; color: black"
-      ></i>
+      <div class="controls">
+        <i id="arrowUp" class="fas fa-arrow-up"></i>
+        <div class="horizontal-arrows">
+          <i id="arrowLeft" class="fas fa-arrow-left"></i>
+          <i id="arrowRight" class="fas fa-arrow-right"></i>
+        </div>
+        <i id="arrowDown" class="fas fa-arrow-down"></i>
+      </div>
     </div>
+
     <script src="script.js"></script>
   </body>
 </html>
