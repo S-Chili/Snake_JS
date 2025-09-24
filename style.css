@@ -3,10 +3,6 @@ body {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-
-  /* Додаємо ці два рядки */
-  height: 100vh;
-  margin: 0;
 }
 @font-face {
   font-family: "Font Awesome 6 Free";
