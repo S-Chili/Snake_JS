@@ -1,3 +1,13 @@
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+
+  /* Додаємо ці два рядки */
+  height: 100vh;
+  margin: 0;
+}
 @font-face {
   font-family: "Font Awesome 6 Free";
   font-style: normal;
@@ -5,4 +15,23 @@
   font-display: block;
   src: url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/webfonts/fa-solid-900.ttf")
     format("truetype");
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.helping {
+  display: flex;
+  flex-direction: row;
+}
+
+.horizontal-arrows {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
 }

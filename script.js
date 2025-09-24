@@ -1,4 +1,7 @@
 let backgroundColor = "beige";
+let lastTap = 0;
+let startX = 0;
+let startY = 0;
 
 // Знаходимо наш <canvas> елемент за id
 const canvas = document.getElementById("gameCanvas");
@@ -12,9 +15,6 @@ const gridSize = 20;
 
 let isPaused = false;
 
-let startX = 0;
-let startY = 0;
-
 document.addEventListener("keydown", (event) => {
   if (
     event.key === "p" ||
@@ -26,59 +26,6 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-// Додаємо слухачів подій для свайпів на Canvas
-canvas.addEventListener("touchstart", handleTouchStart, false);
-canvas.addEventListener("touchmove", handleTouchMove, false);
-canvas.addEventListener("touchend", handleTouchEnd, false);
-
-function handleTouchStart(event) {
-  const firstTouch = event.touches[0];
-  startX = firstTouch.clientX;
-  startY = firstTouch.clientY;
-}
-
-function handleTouchMove(event) {
-  if (!startX || !startY) {
-    return;
-  }
-
-  let endX = event.touches[0].clientX;
-  let endY = event.touches[0].clientY;
-
-  let diffX = startX - endX;
-  let diffY = startY - endY;
-
-  // Якщо рух по горизонталі більший, ніж по вертикалі, це свайп вліво/вправо
-  if (Math.abs(diffX) > Math.abs(diffY)) {
-    if (diffX > 0) {
-      // Свайп вліво
-      if (direction.x === 0) direction = { x: -1, y: 0 };
-    } else {
-      // Свайп вправо
-      if (direction.x === 0) direction = { x: 1, y: 0 };
-    }
-  } else {
-    // Інакше, це свайп вгору/вниз
-    if (diffY > 0) {
-      // Свайп вгору
-      if (direction.y === 0) direction = { x: 0, y: -1 };
-    } else {
-      // Свайп вниз
-      if (direction.y === 0) direction = { x: 0, y: 1 };
-    }
-  }
-
-  // Скидаємо початкові координати, щоб не спрацювало знову
-  startX = 0;
-  startY = 0;
-}
-
-function handleTouchEnd(event) {
-  // Просто скидаємо координати після завершення свайпу
-  startX = 0;
-  startY = 0;
-}
-
 // Створюємо початкову змійку. Вона складається з одного сегмента.
 let snake = [{ x: 10, y: 10 }];
 
@@ -89,6 +36,24 @@ let score = 0; // Початковий рахунок
 
 // Координати їжі
 let food = {};
+
+function handleTouchStart(event) {
+  const currentTime = new Date().getTime();
+  const tapLength = currentTime - lastTap;
+
+  // Перевіряємо, чи це подвійне торкання (наприклад, менше ніж 300 мс)
+  if (tapLength < 300 && tapLength > 0) {
+    // Подвійне торкання, запускаємо паузу
+    isPaused = !isPaused;
+  }
+
+  lastTap = currentTime; // Оновлюємо час останнього торкання
+
+  // Зберігаємо координати для відстеження свайпів
+  const firstTouch = event.touches[0];
+  startX = firstTouch.clientX;
+  startY = firstTouch.clientY;
+}
 
 function checkCollision() {
   // Починаємо перевірку з другого сегмента (індекс 1), бо голова (індекс 0) завжди буде співпадати
@@ -127,11 +92,6 @@ function isSnake(point) {
 function gameLoop() {
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  // Додаємо зображення сонця та місяця на сторінку (не на canvas)
-  // Додай в index.html, наприклад, після canvas
-  // <img id="sun" src="sun.png" style="width: 50px; cursor: pointer;">
-  // <img id="moon" src="moon.png" style="width: 50px; cursor: pointer;">
 
   if (checkCollision()) {
     alert("Гра закінчена! Ваш рахунок: " + score);
@@ -225,6 +185,24 @@ document.getElementById("moon").addEventListener("click", () => {
   updateBackground();
 });
 
+// Додаємо слухачів подій для кнопок-стрілок
+document.getElementById("arrowUp").addEventListener("click", () => {
+  // Створюємо імітовану подію, яка передає ключ "ArrowUp"
+  changeDirection({ key: "ArrowUp" });
+});
+
+document.getElementById("arrowDown").addEventListener("click", () => {
+  changeDirection({ key: "ArrowDown" });
+});
+
+document.getElementById("arrowLeft").addEventListener("click", () => {
+  changeDirection({ key: "ArrowLeft" });
+});
+
+document.getElementById("arrowRight").addEventListener("click", () => {
+  changeDirection({ key: "ArrowRight" });
+});
+
 // Додаємо слухача подій для клавіатури
 document.addEventListener("keydown", changeDirection);
 
@@ -255,6 +233,8 @@ function changeDirection(event) {
     direction = { x: 0, y: 1 };
   }
 }
+
+canvas.addEventListener("touchstart", handleTouchStart, false);
 
 // A function to reset the game state
 function restartGame() {
