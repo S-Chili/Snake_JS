@@ -186,20 +186,23 @@ document.getElementById("moon").addEventListener("click", () => {
 });
 
 // Додаємо слухачів подій для кнопок-стрілок
-document.getElementById("arrowUp").addEventListener("click", () => {
-  // Створюємо імітовану подію, яка передає ключ "ArrowUp"
+document.getElementById("arrowUp").addEventListener("touchend", (event) => {
+  event.preventDefault(); // Запобігаємо стандартній поведінці браузера, такій як масштабування
   changeDirection({ key: "ArrowUp" });
 });
 
-document.getElementById("arrowDown").addEventListener("click", () => {
+document.getElementById("arrowDown").addEventListener("touchend", (event) => {
+  event.preventDefault();
   changeDirection({ key: "ArrowDown" });
 });
 
-document.getElementById("arrowLeft").addEventListener("click", () => {
+document.getElementById("arrowLeft").addEventListener("touchend", (event) => {
+  event.preventDefault();
   changeDirection({ key: "ArrowLeft" });
 });
 
-document.getElementById("arrowRight").addEventListener("click", () => {
+document.getElementById("arrowRight").addEventListener("touchend", (event) => {
+  event.preventDefault();
   changeDirection({ key: "ArrowRight" });
 });
 
