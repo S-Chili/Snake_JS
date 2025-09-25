@@ -2,7 +2,7 @@ let backgroundColor = "beige";
 let lastTap = 0;
 let startX = 0;
 let startY = 0;
-
+let gameTimeoutId;
 // Знаходимо наш <canvas> елемент за id
 const canvas = document.getElementById("gameCanvas");
 
@@ -167,7 +167,7 @@ function gameLoop() {
   ctx.fillText("Рахунок: " + score, 10, 20);
 
   // Викликаємо наступний кадр з затримкою 150 мілісекунд (0.15 секунди)
-  setTimeout(gameLoop, 150);
+  gameTimeoutId = setTimeout(gameLoop, 150);
 }
 
 // Запускаємо гру
@@ -209,6 +209,8 @@ document.addEventListener("keydown", changeDirection);
 
 // Ця функція буде змінювати напрямок руху змійки
 function changeDirection(event) {
+  event.preventDefault();
+
   const keyPressed = event.key;
   const LEFT_KEY = "ArrowLeft";
   const RIGHT_KEY = "ArrowRight";
@@ -239,6 +241,9 @@ canvas.addEventListener("touchstart", handleTouchStart, false);
 
 // A function to reset the game state
 function restartGame() {
+  if (gameTimeoutId) {
+    clearTimeout(gameTimeoutId);
+  }
   // Reset all game variables to their initial state
   snake = [{ x: 10, y: 10 }];
   direction = { x: 1, y: 0 };
