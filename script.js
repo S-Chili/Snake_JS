@@ -3,13 +3,10 @@ let lastTap = 0;
 let startX = 0;
 let startY = 0;
 let gameTimeoutId;
-// Знаходимо наш <canvas> елемент за id
 const canvas = document.getElementById("gameCanvas");
 
-// Отримуємо "контекст малювання" 2D
 const ctx = canvas.getContext("2d");
 
-// Розміри нашого полотна
 const canvasSize = 600;
 const gridSize = 20;
 
@@ -22,54 +19,43 @@ document.addEventListener("keydown", (event) => {
     event.key === "з" ||
     event.key === "З"
   ) {
-    isPaused = !isPaused; // Змінюємо стан на протилежний
+    isPaused = !isPaused;
   }
 });
 
-// Створюємо початкову змійку. Вона складається з одного сегмента.
 let snake = [{ x: 10, y: 10 }];
 
-// Задаємо початковий напрямок руху (вправо)
 let direction = { x: 1, y: 0 };
 
-let score = 0; // Початковий рахунок
+let score = 0;
 
-// Координати їжі
 let food = {};
 
 function handleTouchStart(event) {
   const currentTime = new Date().getTime();
   const tapLength = currentTime - lastTap;
 
-  // Перевіряємо, чи це подвійне торкання (наприклад, менше ніж 300 мс)
   if (tapLength < 300 && tapLength > 0) {
-    // Подвійне торкання, запускаємо паузу
     isPaused = !isPaused;
   }
 
-  lastTap = currentTime; // Оновлюємо час останнього торкання
-
-  // Зберігаємо координати для відстеження свайпів
+  lastTap = currentTime;
   const firstTouch = event.touches[0];
   startX = firstTouch.clientX;
   startY = firstTouch.clientY;
 }
 
 function checkCollision() {
-  // Починаємо перевірку з другого сегмента (індекс 1), бо голова (індекс 0) завжди буде співпадати
   for (let i = 1; i < snake.length; i++) {
-    // Якщо координати голови збігаються з координатами іншого сегмента
     if (snake[i].x === snake[0].x && snake[i].y === snake[0].y) {
       return true;
     }
   }
-  return false; // Повертаємо false, якщо зіткнення немає
+  return false;
 }
 
-// Функція для генерації випадкових координат їжі
 function createFood() {
   let newFood;
-  // Цикл do-while буде виконуватись доти, доки ми не знайдемо вільне місце
   do {
     newFood = {
       x: Math.floor(Math.random() * (canvasSize / gridSize)),
@@ -80,42 +66,35 @@ function createFood() {
   food = newFood;
 }
 
-// Нова функція для перевірки, чи є клітинка частиною змійки
 function isSnake(point) {
-  // some() перевіряє, чи хоча б один елемент масиву відповідає умові
   return snake.some(
     (segment) => segment.x === point.x && segment.y === point.y
   );
 }
 
-// Це наш ігровий цикл
 function gameLoop() {
   ctx.fillStyle = backgroundColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (checkCollision()) {
     alert("Гра закінчена! Ваш рахунок: " + score);
-    return; // Зупиняємо виконання функції gameLoop()
+    return;
   }
   if (isPaused) {
-    // Малюємо напис "ПАУЗА"
     ctx.fillStyle = "red";
     ctx.font = "40px Arial";
     ctx.textAlign = "center";
     ctx.fillText("PAUSE", canvas.width / 2, canvas.height / 2);
 
-    // Якщо на паузі, просто зупиняємо цикл і чекаємо
     setTimeout(gameLoop, 150);
     return;
   }
 
-  // 2. Створюємо нову голову змійки на основі поточного напрямку
   const head = {
     x: snake[0].x + direction.x,
     y: snake[0].y + direction.y,
   };
 
-  // Перевірка на вихід за межі поля
   if (head.x < 0) {
     head.x = canvasSize / gridSize - 1;
   }
@@ -129,24 +108,17 @@ function gameLoop() {
     head.y = 0;
   }
 
-  // 3. Додаємо нову голову на початок масиву
   snake.unshift(head);
 
-  // Перевірка на зіткнення з їжею
   const didEatFood = snake[0].x === food.x && snake[0].y === food.y;
 
   if (didEatFood) {
-    // Змійка з'їла їжу!
-    // Ми не будемо викликати snake.pop(), щоб змійка росла
-    // Або ми могли б додати очки
     score++;
-    createFood(); // Створюємо нову їжу
+    createFood();
   } else {
-    // Якщо змійка нічого не їла, видаляємо останній сегмент
     snake.pop();
   }
 
-  // 5. Малюємо кожен сегмент змійки
   snake.forEach((segment) => {
     ctx.fillStyle = "green";
     ctx.fillRect(
@@ -157,35 +129,29 @@ function gameLoop() {
     );
   });
 
-  // Малюємо їжу
-  ctx.fillStyle = "red"; // Колір іконки
-  ctx.font = `900 ${gridSize}px 'Font Awesome 6 Free'`; // Розмір і шрифт
+  ctx.fillStyle = "red";
+  ctx.font = `900 ${gridSize}px 'Font Awesome 6 Free'`;
   ctx.fillText("\uf5d2", food.x * gridSize, food.y * gridSize + gridSize - 2);
-  // Малюємо рахунок
-  ctx.fillStyle = "green"; // Змінюємо на білий або світлий колір
+  ctx.fillStyle = "green";
   ctx.font = "20px Arial";
   ctx.fillText("Рахунок: " + score, 10, 20);
 
-  // Викликаємо наступний кадр з затримкою 150 мілісекунд (0.15 секунди)
   gameTimeoutId = setTimeout(gameLoop, 150);
 }
 
-// Запускаємо гру
 createFood();
 gameLoop();
 
-// Додаємо JavaScript для обробки кліків
 document.getElementById("sun").addEventListener("click", () => {
   backgroundColor = "beige";
 });
 
 document.getElementById("moon").addEventListener("click", () => {
-  backgroundColor = "gray"; // Змінюємо на сірий
+  backgroundColor = "gray";
 });
 
-// Додаємо слухачів подій для кнопок-стрілок
 document.getElementById("arrowUp").addEventListener("touchend", (event) => {
-  event.preventDefault(); // Запобігаємо стандартній поведінці браузера, такій як масштабування
+  event.preventDefault();
   changeDirection({ key: "ArrowUp" });
 });
 
@@ -204,12 +170,12 @@ document.getElementById("arrowRight").addEventListener("touchend", (event) => {
   changeDirection({ key: "ArrowRight" });
 });
 
-// Додаємо слухача подій для клавіатури
 document.addEventListener("keydown", changeDirection);
 
-// Ця функція буде змінювати напрямок руху змійки
 function changeDirection(event) {
-  event.preventDefault();
+  if (typeof event.preventDefault === "function") {
+    event.preventDefault();
+  }
 
   const keyPressed = event.key;
   const LEFT_KEY = "ArrowLeft";
@@ -217,7 +183,6 @@ function changeDirection(event) {
   const UP_KEY = "ArrowUp";
   const DOWN_KEY = "ArrowDown";
 
-  // Запобігаємо зворотному руху (наприклад, не можна йти вліво, якщо вже рухаєшся вправо)
   const goingUp = direction.y === -1;
   const goingDown = direction.y === 1;
   const goingRight = direction.x === 1;
@@ -239,33 +204,23 @@ function changeDirection(event) {
 
 canvas.addEventListener("touchstart", handleTouchStart, false);
 
-// A function to reset the game state
 function restartGame() {
   if (gameTimeoutId) {
     clearTimeout(gameTimeoutId);
   }
-  // Reset all game variables to their initial state
   snake = [{ x: 10, y: 10 }];
   direction = { x: 1, y: 0 };
   score = 0;
   isPaused = false;
-  // Create new food
   createFood();
-  // Restart the game loop
   gameLoop();
 }
 
-// ... existing code
-
-// Find the restart button and add a click event listener
 document.getElementById("restartButton").addEventListener("click", () => {
   restartGame();
 });
 
-// We also need to change the game-over condition to call restartGame()
 if (checkCollision()) {
   alert("Гра закінчена! Ваш рахунок: " + score);
-  // Don't just return, show a restart button or call the restart function
-  // For now, let's keep it simple and just have the alert.
-  // The player can click the button we just added.
+  restartGame();
 }
