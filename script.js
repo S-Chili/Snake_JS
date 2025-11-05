@@ -4,41 +4,29 @@ let startX = 0;
 let startY = 0;
 let gameTimeoutId;
 const canvas = document.getElementById("gameCanvas");
-
 const ctx = canvas.getContext("2d");
 
 const canvasSize = 600;
 const gridSize = 20;
 
 let isPaused = false;
+let snake = [{ x: 10, y: 10 }];
+let direction = { x: 1, y: 0 };
+let score = 0;
+let food = {};
 
 document.addEventListener("keydown", (event) => {
-  if (
-    event.key === "p" ||
-    event.key === "P" ||
-    event.key === "з" ||
-    event.key === "З"
-  ) {
+  if (["p", "P", "з", "З"].includes(event.key)) {
     isPaused = !isPaused;
   }
 });
 
-let snake = [{ x: 10, y: 10 }];
-
-let direction = { x: 1, y: 0 };
-
-let score = 0;
-
-let food = {};
-
 function handleTouchStart(event) {
   const currentTime = new Date().getTime();
   const tapLength = currentTime - lastTap;
-
   if (tapLength < 300 && tapLength > 0) {
     isPaused = !isPaused;
   }
-
   lastTap = currentTime;
   const firstTouch = event.touches[0];
   startX = firstTouch.clientX;
@@ -61,15 +49,11 @@ function createFood() {
       x: Math.floor(Math.random() * (canvasSize / gridSize)),
       y: Math.floor(Math.random() * (canvasSize / gridSize)),
     };
-  } while (isSnake(newFood));
+  } while (
+    snake.some((segment) => segment.x === newFood.x && segment.y === newFood.y)
+  );
 
   food = newFood;
-}
-
-function isSnake(point) {
-  return snake.some(
-    (segment) => segment.x === point.x && segment.y === point.y
-  );
 }
 
 function gameLoop() {
@@ -80,38 +64,31 @@ function gameLoop() {
     alert("Гра закінчена! Ваш рахунок: " + score);
     return;
   }
+
   if (isPaused) {
-    ctx.fillStyle = "red";
-    ctx.font = "40px Arial";
+    ctx.fillStyle = "rgba(255, 80, 80, 0.8)";
+    ctx.font = "bold 40px Poppins, Arial";
     ctx.textAlign = "center";
     ctx.fillText("PAUSE", canvas.width / 2, canvas.height / 2);
-
+    canvas.classList.add("paused");
     setTimeout(gameLoop, 150);
     return;
+  } else {
+    canvas.classList.remove("paused");
   }
 
   const head = {
     x: snake[0].x + direction.x,
     y: snake[0].y + direction.y,
   };
-
-  if (head.x < 0) {
-    head.x = canvasSize / gridSize - 1;
-  }
-  if (head.x >= canvasSize / gridSize) {
-    head.x = 0;
-  }
-  if (head.y < 0) {
-    head.y = canvasSize / gridSize - 1;
-  }
-  if (head.y >= canvasSize / gridSize) {
-    head.y = 0;
-  }
+  if (head.x < 0) head.x = canvasSize / gridSize - 1;
+  if (head.x >= canvasSize / gridSize) head.x = 0;
+  if (head.y < 0) head.y = canvasSize / gridSize - 1;
+  if (head.y >= canvasSize / gridSize) head.y = 0;
 
   snake.unshift(head);
 
   const didEatFood = snake[0].x === food.x && snake[0].y === food.y;
-
   if (didEatFood) {
     score++;
     createFood();
@@ -119,8 +96,35 @@ function gameLoop() {
     snake.pop();
   }
 
-  snake.forEach((segment) => {
-    ctx.fillStyle = "green";
+  // --- Малюємо змійку ---
+  snake.forEach((segment, index) => {
+    if (index === 0) {
+      const gradient = ctx.createRadialGradient(
+        segment.x * gridSize + gridSize / 2,
+        segment.y * gridSize + gridSize / 2,
+        2,
+        segment.x * gridSize + gridSize / 2,
+        segment.y * gridSize + gridSize / 2,
+        gridSize / 1.2
+      );
+      gradient.addColorStop(0, "#00ffcc");
+      gradient.addColorStop(1, "#006644");
+      ctx.fillStyle = gradient;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "#00ffcc";
+    } else {
+      const gradient = ctx.createLinearGradient(
+        segment.x * gridSize,
+        segment.y * gridSize,
+        segment.x * gridSize + gridSize,
+        segment.y * gridSize + gridSize
+      );
+      gradient.addColorStop(0, "#00cc66");
+      gradient.addColorStop(1, "#006633");
+      ctx.fillStyle = gradient;
+      ctx.shadowBlur = 0;
+    }
+
     ctx.fillRect(
       segment.x * gridSize,
       segment.y * gridSize,
@@ -129,12 +133,36 @@ function gameLoop() {
     );
   });
 
-  ctx.fillStyle = "red";
-  ctx.font = `900 ${gridSize}px 'Font Awesome 6 Free'`;
-  ctx.fillText("\uf5d2", food.x * gridSize, food.y * gridSize + gridSize - 2);
-  ctx.fillStyle = "green";
-  ctx.font = "20px Arial";
-  ctx.fillText("Рахунок: " + score, 10, 20);
+  ctx.shadowBlur = 0;
+
+  // --- Малюємо їжу ---
+  const pulse = Math.sin(Date.now() / 250) * 3 + gridSize / 1.8;
+  const foodGradient = ctx.createRadialGradient(
+    food.x * gridSize + gridSize / 2,
+    food.y * gridSize + gridSize / 2,
+    2,
+    food.x * gridSize + gridSize / 2,
+    food.y * gridSize + gridSize / 2,
+    pulse / 2
+  );
+  foodGradient.addColorStop(0, "#ff6b6b");
+  foodGradient.addColorStop(1, "#8b0000");
+
+  ctx.fillStyle = foodGradient;
+  ctx.beginPath();
+  ctx.arc(
+    food.x * gridSize + gridSize / 2,
+    food.y * gridSize + gridSize / 2,
+    gridSize / 2.2,
+    0,
+    2 * Math.PI
+  );
+  ctx.fill();
+
+  ctx.fillStyle = "#00ffcc";
+  ctx.font = "bold 20px Poppins, Arial";
+  ctx.textAlign = "left";
+  ctx.fillText("Рахунок: " + score, 10, 25);
 
   gameTimeoutId = setTimeout(gameLoop, 150);
 }
@@ -143,39 +171,43 @@ createFood();
 gameLoop();
 
 document.getElementById("sun").addEventListener("click", () => {
-  backgroundColor = "beige";
+  document.body.classList.add("light-mode");
 });
-
 document.getElementById("moon").addEventListener("click", () => {
-  backgroundColor = "gray";
-});
-
-document.getElementById("arrowUp").addEventListener("touchend", (event) => {
-  event.preventDefault();
-  changeDirection({ key: "ArrowUp" });
-});
-
-document.getElementById("arrowDown").addEventListener("touchend", (event) => {
-  event.preventDefault();
-  changeDirection({ key: "ArrowDown" });
-});
-
-document.getElementById("arrowLeft").addEventListener("touchend", (event) => {
-  event.preventDefault();
-  changeDirection({ key: "ArrowLeft" });
-});
-
-document.getElementById("arrowRight").addEventListener("touchend", (event) => {
-  event.preventDefault();
-  changeDirection({ key: "ArrowRight" });
+  document.body.classList.remove("light-mode");
 });
 
 document.addEventListener("keydown", changeDirection);
 
-function changeDirection(event) {
-  if (typeof event.preventDefault === "function") {
-    event.preventDefault();
+let touchStartX = 0;
+let touchStartY = 0;
+
+canvas.addEventListener("touchstart", (e) => {
+  const touch = e.touches[0];
+  touchStartX = touch.clientX;
+  touchStartY = touch.clientY;
+});
+
+canvas.addEventListener("touchend", (e) => {
+  const touch = e.changedTouches[0];
+  const deltaX = touch.clientX - touchStartX;
+  const deltaY = touch.clientY - touchStartY;
+  const absX = Math.abs(deltaX);
+  const absY = Math.abs(deltaY);
+
+  if (Math.max(absX, absY) > 30) {
+    if (absX > absY) {
+      if (deltaX > 0 && direction.x !== -1) direction = { x: 1, y: 0 };
+      else if (deltaX < 0 && direction.x !== 1) direction = { x: -1, y: 0 };
+    } else {
+      if (deltaY > 0 && direction.y !== -1) direction = { x: 0, y: 1 };
+      else if (deltaY < 0 && direction.y !== 1) direction = { x: 0, y: -1 };
+    }
   }
+});
+
+function changeDirection(event) {
+  if (typeof event.preventDefault === "function") event.preventDefault();
 
   const keyPressed = event.key;
   const LEFT_KEY = "ArrowLeft";
@@ -188,39 +220,21 @@ function changeDirection(event) {
   const goingRight = direction.x === 1;
   const goingLeft = direction.x === -1;
 
-  if (keyPressed === LEFT_KEY && !goingRight) {
-    direction = { x: -1, y: 0 };
-  }
-  if (keyPressed === UP_KEY && !goingDown) {
-    direction = { x: 0, y: -1 };
-  }
-  if (keyPressed === RIGHT_KEY && !goingLeft) {
-    direction = { x: 1, y: 0 };
-  }
-  if (keyPressed === DOWN_KEY && !goingUp) {
-    direction = { x: 0, y: 1 };
-  }
+  if (keyPressed === LEFT_KEY && !goingRight) direction = { x: -1, y: 0 };
+  if (keyPressed === UP_KEY && !goingDown) direction = { x: 0, y: -1 };
+  if (keyPressed === RIGHT_KEY && !goingLeft) direction = { x: 1, y: 0 };
+  if (keyPressed === DOWN_KEY && !goingUp) direction = { x: 0, y: 1 };
 }
 
 canvas.addEventListener("touchstart", handleTouchStart, false);
+document.getElementById("restartButton").addEventListener("click", restartGame);
 
 function restartGame() {
-  if (gameTimeoutId) {
-    clearTimeout(gameTimeoutId);
-  }
+  if (gameTimeoutId) clearTimeout(gameTimeoutId);
   snake = [{ x: 10, y: 10 }];
   direction = { x: 1, y: 0 };
   score = 0;
   isPaused = false;
   createFood();
   gameLoop();
-}
-
-document.getElementById("restartButton").addEventListener("click", () => {
-  restartGame();
-});
-
-if (checkCollision()) {
-  alert("Гра закінчена! Ваш рахунок: " + score);
-  restartGame();
 }
